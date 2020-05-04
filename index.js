@@ -8,10 +8,10 @@ const bot = new TelegramBot(process.env.BOT_API_KEY, {
   polling: true,
 })
 
-bot.on('contact', async (msg) => {
-  const chatId = msg.chat.id
-  bot.sendMessage(chatId, `Hello! Enter artist's name to search for something similar`)
-});
+// bot.on('contact', async (msg) => {
+//   const chatId = msg.chat.id
+//   bot.sendMessage(chatId, `Hello! Enter artist's name to search for something similar`)
+// });
 
 const postRelatedArtists = async ({
   chatId,
@@ -41,9 +41,9 @@ bot.on('message', async (msg) => {
   const {lastfmArtists, spotifyArtists} = await getSearchedArtists(bandName)
 
   const queryCallback = (query) => {
-    bot.sendMessage(chatId, 'Wait a second..')
+    bot.sendMessage(query.message.chat.id, 'Wait a second..')
     return postRelatedArtists({
-      chatId,
+      chatId: query.message.chat.id,
       name: query.data,
       lastfmArtists,
       spotifyArtists,
