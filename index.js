@@ -1,17 +1,16 @@
 const TelegramBot = require('node-telegram-bot-api')
 const get = require('lodash/get')
 
-const {normalizeString, getChoosingArtistKeyboard, getArtistsKeyboard} = require('./src/utils')
+const {
+  normalizeString, 
+  getChoosingArtistKeyboard, 
+  getArtistsKeyboard,
+} = require('./src/utils')
 const {getRelatedArtists, getSearchedArtists} = require('./src/main-requests')
 
 const bot = new TelegramBot(process.env.BOT_API_KEY, {
   polling: true,
 })
-
-// bot.on('contact', async (msg) => {
-//   const chatId = msg.chat.id
-//   bot.sendMessage(chatId, `Hello! Enter artist's name to search for something similar`)
-// });
 
 const postRelatedArtists = async ({
   chatId,
@@ -35,12 +34,16 @@ const postRelatedArtists = async ({
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id
+  if (msg.text === '/start') {
+    return bot.sendMessage(chatId, `Hello! Enter artist's name to search for similar artists`)
+  }
   const bandName = normalizeString(msg.text).split(' ').join('%20')
   bot.sendMessage(chatId, 'Wait a second..')
 
   const {lastfmArtists, spotifyArtists} = await getSearchedArtists(bandName)
 
   const queryCallback = (query) => {
+    bot.removeListener('callback_query', queryCallback)
     bot.sendMessage(query.message.chat.id, 'Wait a second..')
     return postRelatedArtists({
       chatId: query.message.chat.id,
@@ -51,8 +54,6 @@ bot.on('message', async (msg) => {
   }
 
   const updateListenerAndSendAnswer = (keyboard) => {
-    
-    bot.removeListener('callback_query', queryCallback)
     bot.addListener('callback_query', queryCallback) 
     bot.sendMessage(
       chatId, 

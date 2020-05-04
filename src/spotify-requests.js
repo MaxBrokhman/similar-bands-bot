@@ -1,4 +1,5 @@
 const querystring = require('querystring');
+const get = require('lodash/get')
 
 const {sendRequest} = require('./send-request')
 const {getArtists} = require('./request-utils')
@@ -57,7 +58,7 @@ const getRelatedArtistsOnSpotify = async (id) => {
       },
     }
   })
-  return data.artists
+  return get(data, 'artists', [])
 }
 
 module.exports = {
