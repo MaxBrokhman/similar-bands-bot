@@ -1,5 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api')
 const get = require('lodash/get')
+const express = require('express')
+const bodyParser = require('body-parser')
 
 const {
   normalizeString, 
@@ -8,9 +10,11 @@ const {
 } = require('./src/utils')
 const {getRelatedArtists, getSearchedArtists} = require('./src/main-requests')
 
-const bot = new TelegramBot(process.env.BOT_API_KEY, {
-  polling: true,
-})
+// const bot = new TelegramBot(process.env.BOT_API_KEY, {
+//   polling: true,
+// })
+const bot = new TelegramBot(process.env.BOT_API_KEY)
+bot.setWebHook(`${process.env.HEROKU_URL}${bot.token}`);
 
 const postRelatedArtists = async ({
   chatId,
@@ -90,4 +94,15 @@ bot.on('message', async (msg) => {
     lastfmArtists,
     spotifyArtists,
   })
+});
+
+const app = express();
+ 
+app.use(bodyParser.json());
+ 
+app.listen(process.env.PORT || 3000);
+ 
+app.post(`/${bot.token}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
 });
